@@ -1,20 +1,19 @@
 import ItemList from "./components/ItemList.tsx";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navigation from "./components/Navigation";
+import { Page1, Page2 } from "./Pages";
 
 function App() {
     return (
-        <div className="container my-4">
-            {/* App Header */}
-            <header className="text-center mb-4">
-                <h1 className="text-primary">My Todo App</h1>
-            </header>
-
-            {/* Main Content */}
-            <div className="card shadow">
-                <div className="card-body">
-                    <ItemList />
-                </div>
+        <Router>
+            <div className="container mt-4">
+                <Navigation />
+                <Routes>
+                    <Route path="/" element={<Page1 />} />
+                    <Route path="/page2" element={<Page2 />} />
+                </Routes>
             </div>
-        </div>
+        </Router>
     );
 }
 

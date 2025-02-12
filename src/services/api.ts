@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Define the API base URL
 const API_URL = 'http://localhost:5000';
-const API_PATH = '/api/todos';
+const API_PATH = '/services/todos';
 
 export const api = axios.create({
     baseURL: API_URL,

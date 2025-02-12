@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getItems, createItem, updateItem, ITodoItem, IPagination } from '../api/api';
+import { getItems, createItem, updateItem, ITodoItem, IPagination } from '../services/api';
 import Pagination from "./Pagination.tsx";
 
 const TodoList: React.FC = () => {
