@@ -1,16 +1,18 @@
-import ItemList from "./components/ItemList.tsx";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
-import { Page1, Page2 } from "./Pages";
+import {RegistrationForm} from "./components/auth/RegistrationForm.tsx";
+import {LoginForm} from "./components/auth/LoginForm.tsx";
+import SeatMap from "./components/SeatMap.tsx";
 
 function App() {
     return (
         <Router>
-            <div className="container mt-4">
+            <div className="container" style={{ marginTop: '30px' }}>
                 <Navigation />
                 <Routes>
-                    <Route path="/" element={<Page1 />} />
-                    <Route path="/page2" element={<Page2 />} />
+                    <Route path="/" element={<RegistrationForm />} />
+                    <Route path="/login" element={<LoginForm />} />
+                    <Route path="/seatmap" element={<SeatMap />} />
                 </Routes>
             </div>
         </Router>

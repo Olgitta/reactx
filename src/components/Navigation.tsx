@@ -1,21 +1,35 @@
-import { NavLink } from "react-router-dom";
-// import "bootstrap/dist/css/bootstrap.min.css";
+import React from 'react';
+import { NavLink } from 'react-router-dom';
 
-const Navigation = () => {
+const Navigation: React.FC = () => {
     return (
-        <nav className="nav nav-tabs">
-            <NavLink
-                to="/"
-                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-            >
-                Page 1
-            </NavLink>
-            <NavLink
-                to="/page2"
-                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-            >
-                Page 2
-            </NavLink>
+        <nav>
+            <ul className="nav nav-pills">
+                <li role="presentation">
+                    <NavLink
+                        to="/"
+                        className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                    >
+                        Register
+                    </NavLink>
+                </li>
+                <li role="presentation">
+                    <NavLink
+                        to="/login"
+                        className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                    >
+                        Login
+                    </NavLink>
+                </li>
+                <li role="presentation">
+                    <NavLink
+                        to="/seatmap"
+                        className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                    >
+                        SeatMap
+                    </NavLink>
+                </li>
+            </ul>
         </nav>
     );
 };
