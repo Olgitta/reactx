@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple React App Instances</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px; /* Промежуток между iframe */
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh; /* Минимальная высота для центрирования */
+        }
+        .iframe-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            width: 48%; /* Примерно половина ширины, чтобы уместить два в ряд */
+            height: 400px; /* Фиксированная высота для каждого iframe */
+            display: flex;
+            flex-direction: column;
+        }
+        iframe {
+            width: 100%;
+            height: 100%; /* Iframe занимает всю доступную высоту контейнера */
+            border: none; /* Убираем стандартную рамку iframe */
+        }
+        h2 {
+            margin: 0;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        /* Медиа-запрос для адаптивности на маленьких экранах */
+        @media (max-width: 768px) {
+            .iframe-container {
+                width: 95%; /* На маленьких экранах каждый iframe занимает почти всю ширину */
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="iframe-container">
+    <h2>React App Instance 1</h2>
+    <iframe src="http://localhost:5173/seatmap" title="React App 1"></iframe>
+</div>
+
+<div class="iframe-container">
+    <h2>React App Instance 2</h2>
+    <iframe src="http://localhost:5173/seatmap" title="React App 2"></iframe>
+</div>
+
+<div class="iframe-container">
+    <h2>React App Instance 3</h2>
+    <iframe src="http://localhost:5173/seatmap" title="React App 3"></iframe>
+</div>
+
+<div class="iframe-container">
+    <h2>React App Instance 4</h2>
+    <iframe src="http://localhost:5173/seatmap" title="React App 4"></iframe>
+</div>
+
+</body>
+</html>
