@@ -7,7 +7,7 @@ import SeatMap from "./components/SeatMap.tsx";
 function App() {
 
     const websocketServerUrl = 'http://localhost:3000'; // Убедись, что это URL твоего NestJS сервера
-    const redisChannelEventName = 'redis_message'; // Имя события, которое сервер отправляет для сообщений Redis
+    const redisChannelEventNameSeatEvents = 'seat_events'; // Имя события, которое сервер отправляет для сообщений Redis
     const eventId = 1;
     const venueId = 1;
 
@@ -20,7 +20,7 @@ function App() {
                     <Route path="/login" element={<LoginForm />} />
                     <Route path="/seatmap" element={<SeatMap
                         wsUrl={websocketServerUrl}
-                        channelName={redisChannelEventName}
+                        channelName={redisChannelEventNameSeatEvents}
                         eventId={eventId}
                         venueId={venueId}/>} />
                 </Routes>
