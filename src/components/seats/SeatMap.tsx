@@ -1,27 +1,20 @@
 // src/components/SeatMap.tsx
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useWebSocket } from '../hooks/useWebSocket';
-import { SeatStatus } from "../enums.ts"; // Предположим, что путь корректен
+import { useWebSocket } from '../../hooks/useWebSocket.ts';
+import { SeatStatus } from "../../enums.ts";
+import {useGuestId} from "../../hooks/useGuestId.ts";
+import {Seat} from "./types.ts";
+import {useConfig} from "../../contexts/ConfigContext.tsx";
 
 interface SeatMapProps {
-    wsUrl: string;
-    channelName: string; // Это имя события Socket.IO, на которое будет подписываться клиент (например, 'seat_events')
     eventId: number;
     venueId: number;
 }
 
-// !!! ИСПРАВЛЕННЫЙ ИНТЕРФЕЙС RedisMessage: используем 'channel' вместо 'channelName'
 interface RedisMessage {
-    channel: string; // Реальное имя канала из Redis (например, 'seat:events:1_1')
-    message: string; // Строка JSON, например, "[1,\"A\",\"5\"]"
-    pattern: string; // Паттерн Redis, по которому было получено сообщение ('seat:events:*_*')
-}
-
-interface Seat {
-    rowNumber: string;
-    seatNumber: string;
-    statusId: SeatStatus;
-    lockedByGuestId?: string; // Опционально, если бэкенд будет присылать Guest ID
+    channel: string;
+    message: string;
+    pattern: string;
 }
 
 interface SeatApiResponse {
@@ -31,41 +24,39 @@ interface SeatApiResponse {
     };
 }
 
-interface UserSeatReservation {
-    eventId: number;
-    venueId: number;
-    rowNumber: string;
-    seatNumber: string;
-}
+const SeatMap: React.FC<SeatMapProps> = ({ eventId, venueId }) => {
 
-const LOCAL_STORAGE_GUEST_ID_KEY = 'guestId';
-const LOCAL_STORAGE_USER_LOCKS_KEY = 'userSeatLocks';
+    const { config, loading: configLoading } = useConfig();
+    if (configLoading) {
+        return <div className="text-center mt-4">Loading configuration...</div>;
+    }
+    if (!config) {
+        return <div className="alert alert-danger mt-4 text-center">Failed to load configuration.</div>;
+    }
 
-// Функция для генерации уникального Guest ID
-const generateGuestId = (): string => {
-    return 'guest_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-};
+    const {
+        apiUrl,
+        wsUrl,
+        wsSeatsEventsChannel
+    } = config;
 
-const SeatMap: React.FC<SeatMapProps> = ({ wsUrl, channelName, eventId, venueId }) => {
     const [seats, setSeats] = useState<Seat[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const fetched = useRef(false);
-// --- Новое состояние для Guest ID и пользовательских резерваций ---
-    const [guestId, setGuestId] = useState<string>('');
-    // userLockedSeats хранит список мест, зарезервированных *этим* пользователем (по его Guest ID)
-    const [userLockedSeats, setUserLockedSeats] = useState<UserSeatReservation[]>([]);
-    // ------------------------------------------------------------------
+
+    const guestId = useGuestId();
 
     const fetchSeats = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`http://localhost:8081/seats/${eventId}/${venueId}`);
+            const res = await fetch(`${apiUrl}/seats/${eventId}/${venueId}`);
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
             const json: SeatApiResponse = await res.json();
+            console.log(`[fetchSeats] OK from: ${apiUrl}/seats/${eventId}/${venueId}`);
             setSeats(json.data);
         } catch (err) {
             console.error('Error fetching seats:', err);
@@ -73,16 +64,16 @@ const SeatMap: React.FC<SeatMapProps> = ({ wsUrl, channelName, eventId, venueId 
         } finally {
             setLoading(false);
         }
-    }, [eventId, venueId]); // Зависимости для useCallback
+    }, [eventId, venueId]);
 
     const handleWebSocketMessage = useCallback((data: RedisMessage) => {
-        // !!! ИСПРАВЛЕНО: используем data.channel вместо data.channelName
+
+        // Received message from Redis: Pattern 'seat:events:*_*', Channel 'seat:events:1_1', Message: '[2,"A","2","abc"]'
+
         console.log(`[SeatMap] Received message from channel "${data.channel}" with pattern "${data.pattern}":`, data);
         try {
-            const channelParts = data.channel.split(':'); // !!! ИСПРАВЛЕНО: data.channel
+            const channelParts = data.channel.split(':');
 
-            // Проверяем, что паттерн совпадает и канал имеет достаточно частей для парсинга eventId_venueId
-            // Ожидаемый формат канала: 'seat:events:EVENTID_VENUEID' (минимум 3 части)
             if (data.pattern === 'seat:events:*_*' && channelParts.length >= 3) {
                 const eventVenuePart = channelParts[2]; // '1_1'
                 const channelSubParts: string[] = eventVenuePart.split('_'); // ['1', '1']
@@ -95,29 +86,30 @@ const SeatMap: React.FC<SeatMapProps> = ({ wsUrl, channelName, eventId, venueId 
                 const receivedEventId = Number(channelSubParts[0]);
                 const receivedVenueId = Number(channelSubParts[1]);
 
-                // Фильтруем сообщения, чтобы обрабатывать только те, что относятся к текущему eventId и venueId
                 if (!(receivedEventId === eventId && receivedVenueId === venueId)) {
                     console.log(`[SeatMap] Ignoring message. Expected eventId: ${eventId}, venueId: ${venueId}. Received eventId: ${receivedEventId}, venueId: ${receivedVenueId}.`);
                     return;
                 }
             } else {
                 console.log(`[SeatMap] Ignoring message. Pattern "${data.pattern}" does not match "seat:events:*_*" or invalid channel format.`);
-                return; // Добавляем return, чтобы не пытаться парсить сообщение, которое не соответствует
+                return;
             }
 
-            // Парсинг сообщения: [SeatStatus, rowNumber, seatNumber]
-            const messagePayload: [SeatStatus, string, string] = JSON.parse(data.message);
+            const messagePayload: [SeatStatus, string, string, string] = JSON.parse(data.message);
 
-            const newStatusId = messagePayload[0];
-            const rowNumber = messagePayload[1];
-            const seatNumber = messagePayload[2];
+            const seatUpdate:Seat = {
+                statusId:messagePayload[0],
+                rowNumber:messagePayload[1],
+                seatNumber:messagePayload[2],
+                lockerId:messagePayload[3],
+            };
 
-            console.log(`[SeatMap] Parsed payload: newStatusId: ${newStatusId}, rowNumber: ${rowNumber}, seatNumber ${seatNumber}.`);
+            console.log(`[SeatMap] Parsed payload: ${seatUpdate}.`);
 
             setSeats(prevSeats =>
                 prevSeats.map(seat => {
-                    if (seat.rowNumber === rowNumber && seat.seatNumber === seatNumber) {
-                        return { ...seat, statusId: newStatusId };
+                    if (seat.rowNumber === seatUpdate.rowNumber && seat.seatNumber === seatUpdate.seatNumber) {
+                        return { ...seatUpdate };
                     }
                     return seat;
                 })
@@ -127,7 +119,7 @@ const SeatMap: React.FC<SeatMapProps> = ({ wsUrl, channelName, eventId, venueId 
         }
     }, [eventId, venueId]);
 
-    const { isConnected, socket } = useWebSocket(wsUrl, channelName, handleWebSocketMessage);
+    const { isConnected } = useWebSocket(wsUrl, wsSeatsEventsChannel, handleWebSocketMessage, fetched);
 
     useEffect(() => {
         if (!fetched.current) {
@@ -146,7 +138,6 @@ const SeatMap: React.FC<SeatMapProps> = ({ wsUrl, channelName, eventId, venueId 
 
     const handleSeatClick = async (seat: Seat) => {
         if (!isConnected || seat.statusId === SeatStatus.BOOKED) return;
-
         const method = seat.statusId === SeatStatus.LOCKED ? 'DELETE' : 'POST';
 
         const fetchConfig: RequestInit = {
@@ -157,11 +148,12 @@ const SeatMap: React.FC<SeatMapProps> = ({ wsUrl, channelName, eventId, venueId 
                 venueId: venueId,
                 rowNumber: seat.rowNumber,
                 seatNumber: seat.seatNumber,
+                lockerId: guestId
             }),
         };
 
         try {
-            const response = await fetch('http://localhost:8081/seats/locks', fetchConfig);
+            const response = await fetch(`${apiUrl}/seats/locks`, fetchConfig);
 
             if (response.ok) {
                 console.log(`Request to change status for seat ${seat.rowNumber}${seat.seatNumber} sent. Awaiting WebSocket update.`);
@@ -200,19 +192,21 @@ const SeatMap: React.FC<SeatMapProps> = ({ wsUrl, channelName, eventId, venueId 
                         {rowSeats
                             .sort((a, b) => parseInt(a.seatNumber) - parseInt(b.seatNumber))
                             .map(seat => (
-                                <button
-                                    key={`${seat.rowNumber}-${seat.seatNumber}`}
-                                    className={`btn ${
-                                        seat.statusId === SeatStatus.AVAILABLE ? 'btn-success' :
-                                            seat.statusId === SeatStatus.LOCKED ? 'btn-warning' :
-                                                'btn-danger'
-                                    }`}
-                                    onClick={() => handleSeatClick(seat)}
-                                    disabled={areAllSeatsDisabled || seat.statusId === SeatStatus.BOOKED}
+                                    <button
+                                        key={`${seat.rowNumber}-${seat.seatNumber}`}
+                                        className={`btn ${
+                                            seat.lockerId === guestId ? 'btn-primary' :
+                                                seat.statusId === SeatStatus.AVAILABLE ? 'btn-success' :
+                                                    seat.statusId === SeatStatus.LOCKED ? 'btn-warning' :
+                                                        'btn-danger'
+                                        }`}
+
+                                        onClick={() => handleSeatClick(seat)}
+                                    disabled={areAllSeatsDisabled || seat.statusId === SeatStatus.BOOKED || (seat.statusId===SeatStatus.LOCKED && seat.lockerId !== guestId)}
                                     title={`Seat ${seat.rowNumber}${seat.seatNumber} - Status: ${seat.statusId === SeatStatus.AVAILABLE ? 'Available' : seat.statusId === SeatStatus.LOCKED ? 'Locked' : 'Booked'}${areAllSeatsDisabled ? ' (No WS connection)' : ''}`}
-                                >
-                                    {seat.seatNumber}
-                                </button>
+                                    >
+                                        {seat.seatNumber}
+                                    </button>
                             ))}
                     </div>
                 </div>

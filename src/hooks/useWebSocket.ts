@@ -23,11 +23,14 @@ export const useWebSocket = (
     wsUrl: string,
     channelName: string,
     onMessageCallback: (data: RedisMessage) => void // Типизируем входящие данные
-) => {
+    , fetched: React.MutableRefObject<boolean>) => {
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const socketRef = useRef<Socket | null>(null); // Используем useRef для хранения экземпляра сокета
 
     useEffect(() => {
+        if(!fetched.current) {
+            return;
+        }
         console.log(`[useWebSocket] Attempting to connect to WebSocket at ${wsUrl}`);
         // Создаем новый экземпляр сокета
         const newSocket: Socket = io(wsUrl);
