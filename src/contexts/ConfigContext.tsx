@@ -1,7 +1,13 @@
 // src/contexts/ConfigContext.tsx
 import { createContext, useContext, useState, useEffect } from 'react';
+import {generateIdString} from "../core/utils.ts";
 
 export interface Config {
+    guestId: string;
+    seatMap: SeatsConfig;
+}
+
+interface SeatsConfig {
     apiUrl: string;
     wsUrl: string;
     wsSeatsEventsChannel: string
@@ -30,12 +36,17 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         //     .finally(() => setLoading(false));
 
         setConfig({
-            "apiUrl": "http://localhost:8081",
-            "wsUrl": "http://localhost:3000",
-            "wsSeatsEventsChannel": "seat_events"
+            guestId: generateIdString(),
+            seatMap: {
+                apiUrl: "http://localhost:8081",
+                wsUrl: "http://localhost:3000",
+                wsSeatsEventsChannel: "seat_events"
+            }
         });
 
         setLoading(false);
+
+        console.log("[ConfigProvider] config is loaded")
 
     }, []);
 

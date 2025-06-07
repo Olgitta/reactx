@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import {usePopup} from "../../contexts/PopupContext.tsx";
 
 interface RegistrationResponse {
     email: string;
@@ -11,23 +12,29 @@ export const RegistrationForm: React.FC = () => {
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
     const [result, setResult] = useState<RegistrationResponse | null>(null);
+    const { showPopup } = usePopup();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const payload = { email, password, username };
 
-        const res = await fetch('http://localhost:8080/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
+        try{
+            const res = await fetch('http://localhost:8080/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
 
-        if (res.ok) {
-            const data = await res.json();
-            setResult(data);
-        } else {
-            alert('Registration failed');
+            if (res.ok) {
+                const data = await res.json();
+                setResult(data);
+            } else {
+                showPopup('Registration failed', 'error');
+            }
+        } catch (error) {
+            showPopup(`Registration failed: ${error}`, 'error');
         }
+
     };
 
     return (

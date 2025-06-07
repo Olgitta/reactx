@@ -3,14 +3,14 @@ import Navigation from "./components/Navigation";
 import {RegistrationForm} from "./components/auth/RegistrationForm.tsx";
 import {LoginForm} from "./components/auth/LoginForm.tsx";
 import SeatMap from "./components/seats/SeatMap.tsx";
-// import {useConfig} from "./contexts/ConfigContext.tsx";
+import {useConfig} from "./contexts/ConfigContext.tsx";
 
 function App() {
 
-    // const config = useConfig();
-
     const eventId = 1;
     const venueId = 1;
+    const { loading } = useConfig();
+    if (loading) return <div>Loading App...</div>;
 
     return (
         <Router>

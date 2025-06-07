@@ -1,0 +1,32 @@
+@startuml SeatMapLifecycle
+
+actor User
+participant "SeatMap Component" as SeatMap
+participant "Config Hook" as Config
+participant "REST API" as API
+participant "WebSocket Hook" as WebSocket
+participant "Redis via WS" as Redis
+
+== Initial Load ==
+SeatMap -> Config : useConfig()
+Config -> SeatMap : Return config (wsUrl, apiUrl, guestId, etc)
+
+SeatMap -> WebSocket : useWebSocket(wsUrl, wsSeatsEventsChannel, handler)
+WebSocket -> WebSocket : Open connection and subscribe
+WebSocket -> SeatMap : onOpen → isConnected = true
+
+SeatMap -> API : GET /seats/{eventId}/{venueId}
+API --> SeatMap : Return seats[]
+SeatMap -> SeatMap : Render seat map by row
+
+== User Clicks on Seat ==
+User -> SeatMap : Click seat button
+SeatMap -> API : POST or DELETE /seats/locks
+API --> SeatMap : Response ignored (realtime comes via WebSocket)
+
+== WebSocket Update ==
+Redis -> WebSocket : Message on seat:events:eventId_venueId
+WebSocket -> SeatMap : handleWebSocketMessage(payload)
+SeatMap -> SeatMap : Update seats[] state and re-render
+
+@enduml

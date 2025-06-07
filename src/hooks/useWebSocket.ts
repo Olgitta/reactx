@@ -1,5 +1,5 @@
 // src/hooks/useWebSocket.ts
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 // Определяем интерфейс для сообщения Redis, которое приходит через Socket.IO
