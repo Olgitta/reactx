@@ -1,5 +1,5 @@
 // SeatButton.tsx
-import {SeatStatus} from "../../enums";
+import {SeatStatus} from "../types";
 
 const SeatButton = ({ seat, onClick, guestId, isConnected }) => {
     const getClass = () => {

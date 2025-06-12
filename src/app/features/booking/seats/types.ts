@@ -1,5 +1,5 @@
 // types/Seat.ts
-import {SeatStatus} from "../../enums";
+import {SeatStatus} from "../types";
 
 export interface Seat {
     rowNumber: string;

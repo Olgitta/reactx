@@ -1,10 +1,8 @@
 // src/components/SeatMap.tsx
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useWebSocket } from '../../hooks/useWebSocket.ts';
-import { SeatStatus } from '../../enums';
+import { useWebSocket } from '../../../shared/hooks/useWebSocket.ts';
+import { SeatStatus } from '../types';
 import { Seat } from './types.ts';
-import { useConfig } from '../../contexts/ConfigContext.tsx';
-import { usePopup } from '../../contexts/PopupContext.tsx';
 
 let counter:number=0;
 

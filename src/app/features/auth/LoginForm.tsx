@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../../hooks/appHooks'; // or use useDispatch/useSelector with types
-import { login, selectAuth } from './loginSlice';
+import { useAppDispatch, useAppSelector } from '../../appHooks.ts'; // or use useDispatch/useSelector with types
+import { login, selectAuth } from './loginSlice.ts';
 
 export const LoginForm: React.FC = () => {
     const [email, setEmail] = useState('');

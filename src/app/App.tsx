@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navigation from "./components/Navigation";
+import Navigation from "./shared/components/Navigation.tsx";
 import {RegistrationForm} from "./features/auth/RegistrationForm.tsx";
 import {LoginForm} from "./features/auth/LoginForm.tsx";
-import SeatMap from "./components/seats/SeatMap.tsx";
-import {useAppDispatch} from "./hooks/appHooks.ts";
+import SeatMap from "./features/booking/seats/SeatMap.tsx";
+import {useAppDispatch} from "./appHooks.ts";
 import {useEffect} from "react";
 import {loginSlice} from "./features/auth/loginSlice.ts";
 
