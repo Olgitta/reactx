@@ -1,40 +1,17 @@
 import React, { useState } from 'react';
-import {usePopup} from "../../contexts/PopupContext.tsx";
-
-interface RegistrationResponse {
-    email: string;
-    username: string;
-    guid: string;
-}
+import {register, selectRegister} from "./registerSlice.ts";
+import {useAppDispatch, useAppSelector} from "../../hooks/appHooks.ts";
 
 export const RegistrationForm: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
-    const [result, setResult] = useState<RegistrationResponse | null>(null);
-    const { showPopup } = usePopup();
+    const dispatch = useAppDispatch();
+    const {guid, error, loading} = useAppSelector(selectRegister);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const payload = { email, password, username };
-
-        try{
-            const res = await fetch('http://localhost:8080/api/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                setResult(data);
-            } else {
-                showPopup('Registration failed', 'error');
-            }
-        } catch (error) {
-            showPopup(`Registration failed: ${error}`, 'error');
-        }
-
+        dispatch(register({ email, password, username }))
     };
 
     return (
@@ -53,15 +30,21 @@ export const RegistrationForm: React.FC = () => {
                     <label>Password:</label>
                     <input className="form-control" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" />
                 </div>
-                <button className="btn btn-primary" type="submit">Register</button>
+                <button className="btn btn-primary" type="submit" disabled={loading}>Register</button>
             </form>
 
-            {result && (
+            {guid && (
                 <div className="alert alert-success" style={{ marginTop: '15px' }}>
                     <strong>Registered:</strong><br />
-                    Email: {result.email}<br />
-                    Username: {result.username}<br />
-                    GUID: {result.guid}
+                    Email: {email}<br />
+                    Username: {username}<br />
+                    GUID: {guid}
+                </div>
+            )}
+
+            {error && (
+                <div className="alert alert-danger" style={{ marginTop: '15px' }}>
+                    {error}
                 </div>
             )}
         </div>

@@ -1,16 +1,25 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
-import {RegistrationForm} from "./components/auth/RegistrationForm.tsx";
-import {LoginForm} from "./components/auth/LoginForm.tsx";
+import {RegistrationForm} from "./features/auth/RegistrationForm.tsx";
+import {LoginForm} from "./features/auth/LoginForm.tsx";
 import SeatMap from "./components/seats/SeatMap.tsx";
-import {useConfig} from "./contexts/ConfigContext.tsx";
+import {useAppDispatch} from "./hooks/appHooks.ts";
+import {useEffect} from "react";
+import {loginSlice} from "./features/auth/loginSlice.ts";
 
 function App() {
-
     const eventId = 1;
     const venueId = 1;
-    const { loading } = useConfig();
-    if (loading) return <div>Loading App...</div>;
+
+    const dispatch = useAppDispatch();
+    useEffect(() => {
+        const accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+
+        if (accessToken && refreshToken) {
+            dispatch(loginSlice.actions.setTokens({ accessToken, refreshToken }));
+        }
+    }, []);
 
     return (
         <Router>
