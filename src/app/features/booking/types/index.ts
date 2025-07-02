@@ -1,14 +1,14 @@
-export enum SeatStatus {
-    AVAILABLE = 1,
-    LOCKED = 2,
-    BOOKED = 3
-}
-
-export const seatStatusLabel = {
-    [SeatStatus.AVAILABLE]: 'Available',
-    [SeatStatus.LOCKED]: 'Locked',
-    [SeatStatus.BOOKED]: 'Booked',
-};
+// export enum SeatStatus {
+//     AVAILABLE = 1,
+//     LOCKED = 2,
+//     BOOKED = 3
+// }
+//
+// export const seatStatusLabel = {
+//     [SeatStatus.AVAILABLE]: 'Available',
+//     [SeatStatus.LOCKED]: 'Locked',
+//     [SeatStatus.BOOKED]: 'Booked',
+// };
 
 /*
 * The `seatStatusLabel` object is a **mapping from `SeatStatus` enum values to human-readable labels**. It's typically used to convert internal enum values (like `0`, `1`, `2` or similar) into readable strings for display in the UI.

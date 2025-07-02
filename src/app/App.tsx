@@ -1,15 +1,14 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navigation from "./shared/components/Navigation.tsx";
-import {RegistrationForm} from "./features/auth/RegistrationForm.tsx";
+import {RegistrationForm} from "./features/register/RegistrationForm.tsx";
 import {LoginForm} from "./features/auth/LoginForm.tsx";
-import SeatMap from "./features/booking/seats/SeatMap.tsx";
 import {useAppDispatch} from "./appHooks.ts";
 import {useEffect} from "react";
 import {loginSlice} from "./features/auth/loginSlice.ts";
+import Events from "./features/booking/events/Events.tsx";
+import Seats from "./features/booking/seats/Seats.tsx";
 
 function App() {
-    const eventId = 1;
-    const venueId = 1;
 
     const dispatch = useAppDispatch();
     useEffect(() => {
@@ -28,9 +27,8 @@ function App() {
                 <Routes>
                     <Route path="/" element={<RegistrationForm />} />
                     <Route path="/login" element={<LoginForm />} />
-                    <Route path="/seatmap" element={<SeatMap
-                        eventId={eventId}
-                        venueId={venueId}/>} />
+                    <Route path="/events" element={<Events />} />
+                    <Route path="/seats/:eventId/:venueId" element={<Seats />} />
                 </Routes>
             </div>
         </Router>

@@ -1,36 +1,24 @@
 // src/hooks/useWebSocket.ts
 import { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-
-// Определяем интерфейс для сообщения Redis, которое приходит через Socket.IO
-interface RedisMessage {
-    channel: string; // Например, 'seats:lock:event:1'
-    pattern: string;
-    message: string; // Строка JSON, например, "[1, \"A\", \"2\"]"
-}
+import {RedisMessage} from "./types.ts";
 
 /**
- * Пользовательский хук для подключения к WebSocket-серверу Socket.IO
- * и обработки входящих сообщений.
  *
- * @param wsUrl URL WebSocket-сервера (например, 'http://localhost:3000').
+ * @param wsUrl
  * @param channelName
- * @param onMessageCallback Функция обратного вызова, которая будет вызываться при получении сообщения.
- * Должна быть обернута в `useCallback` в компоненте-потребителе для стабильности.
- * @returns Объект со статусом подключения `isConnected` и ссылкой на сам сокет `socket`.
+ * @param onMessageCallback
  */
 export const useWebSocket = (
     wsUrl: string,
     channelName: string,
-    onMessageCallback: (data: RedisMessage) => void // Типизируем входящие данные
-    , fetched: React.MutableRefObject<boolean>) => {
+    onMessageCallback: (data: RedisMessage) => void) => {
+
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const socketRef = useRef<Socket | null>(null); // Используем useRef для хранения экземпляра сокета
 
     useEffect(() => {
-        if(!fetched.current) {
-            return;
-        }
+
         console.log(`[useWebSocket] Attempting to connect to WebSocket at ${wsUrl}`);
         // Создаем новый экземпляр сокета
         const newSocket: Socket = io(wsUrl);
@@ -52,8 +40,7 @@ export const useWebSocket = (
             setIsConnected(false);
         });
 
-        // Подписываемся на кастомное событие, которое наш NestJS сервер отправляет
-        // Используем переданную функцию обратного вызова для обработки сообщения
+        console.log(`[useWebSocket] subscribing to channel: ${channelName}`);
         newSocket.on(channelName, onMessageCallback);
 
         // Функция очистки: выполняется при размонтировании компонента или изменении зависимостей

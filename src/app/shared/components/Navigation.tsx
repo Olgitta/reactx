@@ -23,10 +23,10 @@ const Navigation: React.FC = () => {
                 </li>
                 <li role="presentation">
                     <NavLink
-                        to="/seatmap"
+                        to="/events"
                         className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                     >
-                        SeatMap
+                        Events
                     </NavLink>
                 </li>
             </ul>
