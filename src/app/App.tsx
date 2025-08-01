@@ -29,6 +29,7 @@ function App() {
                     <Route path="/login" element={<LoginForm />} />
                     <Route path="/events" element={<Events />} />
                     <Route path="/seats/:eventId/:venueId" element={<Seats />} />
+                    <Route path="/order/summary" element={<Seats />} />
                 </Routes>
             </div>
         </Router>

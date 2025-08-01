@@ -1,13 +1,26 @@
-import {Seat, SeatStatus} from "./types.ts";
+import {Seat, SeatStatus} from "../types";
 import {RedisMessage} from "../../../shared/hooks/types.ts";
 import {appConfig} from "../../../configuration/appConfig.ts";
 
+/**
+ *
+ * @param data - The data payload containing WS channel, pattern, and message details.
+ * @param data.channel - The channel name "seat_events", representing "seat_events:<eventId>_<venueId>".
+ * @param data.pattern - The pattern "seat:events:*_*" where "seat_events:<eventId>_<venueId>".
+ * @param data.message - An array representing the seat status update.
+ * @param data.message[0] - The `statusId` of the seat (e.g., `SeatStatus.Available`).
+ * @param data.message[1] - The `rowNumber` of the seat.
+ * @param data.message[2] - The `seatNumber` of the seat.
+ * @param data.message[3] - The `id` associated with the seat.
+ * @param eventId - The unique identifier for the event.
+ * @param venueId - The unique identifier for the venue.
+ */
 export const wsMessageHandler = (
     data: RedisMessage,
     eventId: number,
     venueId: number) : Seat | null => {
 
-    console.log(`[SeatMap] Received message from channel "${data.channel}" with pattern "${data.pattern}":`, data);
+    console.log(`[wsMessageHandler] Received message from channel "${data.channel}" with pattern "${data.pattern}":`, data);
 
     try {
         const channelParts = data.channel.split(':');
@@ -24,7 +37,7 @@ export const wsMessageHandler = (
                 statusId: messagePayload[0],
                 rowNumber: messagePayload[1],
                 seatNumber: messagePayload[2],
-                lockerId: messagePayload[3],
+                guestId: messagePayload[3],
             };
 
             console.log(`[wsMessageHandler] Parsed payload:`, seatUpdate);

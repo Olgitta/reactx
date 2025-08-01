@@ -1,20 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import {appConfig} from "../../../configuration/appConfig.ts";
-
-export interface Event {
-    id: number;
-    name: string;
-    type: number;
-    dateTime: string;
-    venueId: number;
-}
-
-interface EventsResponse {
-    data: Event[];
-    metadata: {
-        requestId: string;
-    };
-}
+import {EventsResponse} from "../types";
 
 export const eventsApi = createApi({
     reducerPath: 'eventsApi',

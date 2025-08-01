@@ -1,46 +1,48 @@
-// export enum SeatStatus {
-//     AVAILABLE = 1,
-//     LOCKED = 2,
-//     BOOKED = 3
-// }
-//
-// export const seatStatusLabel = {
-//     [SeatStatus.AVAILABLE]: 'Available',
-//     [SeatStatus.LOCKED]: 'Locked',
-//     [SeatStatus.BOOKED]: 'Booked',
-// };
+export interface ResponseMetadata {
+    metadata: {
+        requestId: string;
+    };
+}
 
-/*
-* The `seatStatusLabel` object is a **mapping from `SeatStatus` enum values to human-readable labels**. It's typically used to convert internal enum values (like `0`, `1`, `2` or similar) into readable strings for display in the UI.
+export interface Event {
+    id: number;
+    name: string;
+    type: number;
+    dateTime: string;
+    venueId: number;
+}
 
-### Example Usage
+export interface EventsResponse extends ResponseMetadata{
+    data: Event[];
+}
 
-You could use it here in your component:
+export enum SeatStatus {
+    AVAILABLE = 1,
+    LOCKED = 2,
+    BOOKED = 3
+}
 
-```tsx
-title={`Seat ${seat.rowNumber}${seat.seatNumber} - Status: ${seatStatusLabel[seat.statusId]}${areAllSeatsDisabled ? ' (No WS connection)' : ''}`}
-```
+export interface Seat {
+    id?: number;
+    rowNumber: string;
+    seatNumber: string;
+    statusId: SeatStatus;
+    guestId: string;
+}
 
-### Why it's useful
+export interface SeatsResponse extends ResponseMetadata{
+    data: Seat[];
+}
 
-* **Cleaner UI text**: Instead of repeating conditional logic like
+export interface BaseLockUnLockSeatRequest {
+    eventId: number;
+    venueId: number;
+    rowNumber: string;
+    seatNumber: string;
+}
 
-  ```tsx
-  seat.statusId === SeatStatus.AVAILABLE ? 'Available' :
-  seat.statusId === SeatStatus.LOCKED ? 'Locked' :
-  'Booked'
-  ```
+export interface LockSeatRequest extends BaseLockUnLockSeatRequest {
+    guestId: string;
+}
 
-  you just use:
-
-  ```tsx
-  seatStatusLabel[seat.statusId]
-  ```
-* **Easier maintenance**: If you want to change `"Locked"` to `"Temporarily Reserved"`, just do it in one place in the map.
-* **Localization**: You can later replace the values in the map with translations (e.g., Hebrew, Russian, etc.) if needed.
-
-### TL;DR:
-
-It's a centralized dictionary to keep your status labels clean, consistent, and easy to manage.
-
-* */
+export type UnLockSeatRequest = BaseLockUnLockSeatRequest

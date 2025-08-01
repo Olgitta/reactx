@@ -1,13 +1,15 @@
 import React from 'react'
 import { useGetEventsQuery } from './eventsApi'
 import {useNavigate} from "react-router-dom";
+import EventCard from "./EventCard.tsx";
+import {Event} from "../types";
 
 const Events: React.FC = () => {
     const { data, error, isLoading } = useGetEventsQuery()
     const navigate = useNavigate()
 
-    const handleClick = (eventId: number, venueId: number) => {
-        navigate(`/seats/${eventId}/${venueId}`)
+    const handleClick = (event: Event) => {
+        navigate(`/seats/${event.id}/${event.venueId}`, { state: { eventCard: event } })
     }
 
     if (isLoading) {
@@ -23,33 +25,21 @@ const Events: React.FC = () => {
     if (error) {
         return (
             <div className="alert alert-danger" role="alert">
-                Ошибка при загрузке мероприятий.
+                Loading...
             </div>
         )
     }
 
     return (
         <div className="container">
-            <h2 className="text-center">Список мероприятий</h2>
+            <h2 className="text-center">Events</h2>
             <div className="row">
                 {data?.data.map((event) => (
-                    <div
-                        className="col-sm-6 col-md-4"
+                    <EventCard
                         key={event.id}
-                        onClick={() => handleClick(event.id, event.venueId)}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <div className="panel panel-primary">
-                            <div className="panel-heading">
-                                <h4 className="panel-title">{event.name}</h4>
-                            </div>
-                            <div className="panel-body">
-                                <p><strong>Дата и время:</strong><br /> {new Date(event.dateTime).toLocaleString()}</p>
-                                <p><strong>Venue ID:</strong> {event.venueId}</p>
-                                <p><strong>Тип:</strong> {event.type === 1 ? 'Концерт' : 'Кино'}</p>
-                            </div>
-                        </div>
-                    </div>
+                        event={event}
+                        onClick={() => handleClick(event)}
+                    />
                 ))}
             </div>
         </div>

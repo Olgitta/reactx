@@ -1,15 +1,21 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useParams} from 'react-router-dom';
+import React, {useCallback, useEffect, useState} from 'react';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {generateUuid} from '../../../shared/utils.ts';
 import {useGetSeatsQuery, useLockSeatMutation, useUnlockSeatMutation} from './seatsApi';
-import {SeatStatus, seatStatusClass, seatStatusLabel, Seat} from './types';
+import {seatStatusClass, seatStatusLabel} from './types';
 import {useWebSocket} from "../../../shared/hooks/useWebSocket.ts";
 import {appConfig} from "../../../configuration/appConfig.ts";
 import {wsMessageHandler} from "./wsMessageHandler.ts";
 import {RedisMessage} from "../../../shared/hooks/types.ts";
+import {LockSeatRequest, Seat, SeatStatus, UnLockSeatRequest} from "../types";
+import {getSeatClassName, isSeatDisabled} from "./helpers.ts";
+import EventCard from "../events/EventCard.tsx";
 
 const Seats: React.FC = () => {
     const {eventId, venueId} = useParams();
-
+    const location = useLocation();
+    const eventCard = location.state?.eventCard;
+    const navigate = useNavigate()
     const {data, error, isLoading} = useGetSeatsQuery({
         eventId: Number(eventId),
         venueId: Number(venueId),
@@ -19,6 +25,19 @@ const Seats: React.FC = () => {
     const [unlockSeat] = useUnlockSeatMutation();
 
     const [seats, setSeats] = useState<Seat[]>([]);
+    const [guestId, setGuestId] = useState<string | ''>('');
+
+    useEffect(() => {
+        if (!eventCard) {
+            // Redirect if no state provided
+            navigate("/events", { replace: true });
+        }
+    }, [eventCard, navigate]);
+
+    useEffect(() => {
+        const uuid = generateUuid();
+        setGuestId(uuid);
+    }, []);
 
     useEffect(() => {
         if (data?.data) {
@@ -26,40 +45,48 @@ const Seats: React.FC = () => {
         }
     }, [data]);
 
-    // channel
-    //     :
-    //     "seat:events:1_1"
-    // message
-    //     :
-    //     "[2,\"A\",\"5\",\"abc\"]"
-    // pattern
-    //     :
-    //     "seat:events:*_*"
+    const handleOrderClick = () => {
+        const seatsLockedByGuest = seats.map((seat: Seat) => {
+            if(seat.guestId === guestId) {
+                return seat;
+            }
+        })
+
+        if(seatsLockedByGuest && seatsLockedByGuest.length > 0) {
+            navigate('/order/summary', { state: { event: eventCard, lockedSeats: seatsLockedByGuest } });
+        }
+
+        return
+    };
 
     const handleSeatClick = async (seat: Seat) => {
         try {
+            const clicked = `${seat.rowNumber}-${seat.seatNumber}`;
+
             if (seat.statusId === SeatStatus.AVAILABLE) {
-                await lockSeat({
+                // lockSeat
+                const payload: LockSeatRequest = {
                     eventId: Number(eventId),
                     venueId: Number(venueId),
                     rowNumber: seat.rowNumber,
                     seatNumber: seat.seatNumber,
-                    lockerId: 'abc', // you may want to use real guestId from useGuestId()
-                }).unwrap();
-                console.log(`[Seats] Seat lock requested: ${seat.rowNumber}-${seat.seatNumber}`);
+                    guestId: guestId
+                }
+                await lockSeat(payload).unwrap();
+                console.log(`[Seats] Seat lock requested: ${clicked}`);
             }
 
-            if (seat.statusId === SeatStatus.LOCKED) {
-                await unlockSeat({
+            if (seat.statusId === SeatStatus.LOCKED && seat.guestId === guestId) {
+                // unlockSeat
+                const payload: UnLockSeatRequest = {
                     eventId: Number(eventId),
                     venueId: Number(venueId),
                     rowNumber: seat.rowNumber,
-                    seatNumber: seat.seatNumber,
-                    lockerId: 'abc', // you may want to use real guestId from useGuestId()
-                }).unwrap();
-                console.log(`[Seats] Seat unlock requested: ${seat.rowNumber}-${seat.seatNumber}`);
+                    seatNumber: seat.seatNumber
+                };
+                await unlockSeat(payload).unwrap();
+                console.log(`[Seats] Seat unlock requested: ${clicked}`);
             }
-
         } catch (error) {
             console.error('[Seats] Failed to lock seat:', error);
         }
@@ -109,8 +136,12 @@ const Seats: React.FC = () => {
 
     return (
         <div className="container mt-4">
-            <h3>Seat Selection</h3>
+
             <div className="d-flex flex-column gap-3">
+                <EventCard event={eventCard} />
+            </div>
+            <div className="d-flex flex-column gap-3">
+                <h4>Seat Selection</h4>
                 {Object.entries(groupedByRow).map(([row, seats]) => (
                     <div key={row}>
                         <strong>Row {row}</strong>
@@ -118,8 +149,8 @@ const Seats: React.FC = () => {
                             {seats.map((seat) => (
                                 <button
                                     key={`${seat.rowNumber}-${seat.seatNumber}`}
-                                    className={`${seatStatusClass[seat.statusId]} px-3 py-2`}
-                                    disabled={seat.statusId === SeatStatus.BOOKED}
+                                    className={`${getSeatClassName(seat, guestId)} px-3 py-2`}
+                                    disabled={isSeatDisabled(seat, guestId)}
                                     onClick={() => handleSeatClick(seat)}
                                 >
                                     {seat.seatNumber}
@@ -130,7 +161,14 @@ const Seats: React.FC = () => {
                 ))}
             </div>
 
-            <hr/>
+                <div className="d-flex flex-column gap-3">
+                    <button
+                        className="btn btn-info  px-3 py-2"
+                        disabled={false}
+                        onClick={() => handleOrderClick()}
+                    >Order</button>
+                </div>
+
             <div>
                 <h5>Legend:</h5>
                 <div className="d-flex gap-3">
@@ -138,8 +176,8 @@ const Seats: React.FC = () => {
                         <div key={status} className="d-flex align-items-center gap-2">
               <span
                   className={`badge ${seatStatusClass[status as unknown as SeatStatus]}`}
-                  style={{width: 24, height: 24}}
-              ></span>
+                  style={{width: 34, height: 24}}
+              >{status}</span>
                             <span>{label}</span>
                         </div>
                     ))}

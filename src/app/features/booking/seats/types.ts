@@ -1,38 +1,15 @@
-export enum SeatStatus {
-    AVAILABLE = 1,
-    LOCKED = 2,
-    BOOKED = 3
-}
+import {SeatStatus} from "../types";
 
 export const seatStatusLabel = {
     [SeatStatus.AVAILABLE]: 'Available',
     [SeatStatus.LOCKED]: 'Locked',
     [SeatStatus.BOOKED]: 'Booked',
+    100: 'Locked by me',
 };
-export interface Seat {
-    rowNumber: string;
-    seatNumber: string;
-    statusId: SeatStatus;
-    lockerId: string;
-}
 
 export const seatStatusClass = {
     [SeatStatus.AVAILABLE]: 'btn btn-success',
     [SeatStatus.LOCKED]: 'btn btn-warning',
     [SeatStatus.BOOKED]: 'btn btn-danger',
+    100: 'btn btn-info',
 };
-
-export interface SeatApiResponse {
-    data: Seat[];
-    metadata: {
-        requestId: string;
-    };
-}
-
-export interface LockSeatRequest {
-    eventId: number;
-    venueId: number;
-    rowNumber: string;
-    seatNumber: string;
-    lockerId: string;
-}
