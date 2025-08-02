@@ -1,16 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
-import {ConfigProvider} from './contexts/ConfigContext';
-import {PopupProvider} from './contexts/PopupContext.tsx';
+import App from './app/App.tsx';
+import {Provider} from 'react-redux';
+import {store} from "./app/store.ts";
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
     <React.StrictMode>
-        <ConfigProvider>
-            <PopupProvider>
-                <App/>
-            </PopupProvider>
-        </ConfigProvider>
+        <Provider store={store}>
+            <App/>
+        </Provider>
     </React.StrictMode>
 );
