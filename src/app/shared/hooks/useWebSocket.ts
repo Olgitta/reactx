@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import {RedisMessage} from "./types.ts";
+import {RedisMessage} from './types.ts';
 
 /**
  *

@@ -1,12 +1,12 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navigation from "./shared/components/Navigation.tsx";
-import {RegistrationForm} from "./features/register/RegistrationForm.tsx";
-import {LoginForm} from "./features/auth/LoginForm.tsx";
-import {useAppDispatch} from "./appHooks.ts";
-import {useEffect} from "react";
-import {loginSlice} from "./features/auth/loginSlice.ts";
-import Events from "./features/booking/events/Events.tsx";
-import Seats from "./features/booking/seats/Seats.tsx";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navigation from './shared/components/Navigation.tsx';
+import {RegistrationForm} from './features/register/RegistrationForm.tsx';
+import {LoginForm} from './features/auth/LoginForm.tsx';
+import {useAppDispatch} from './appHooks.ts';
+import {useEffect} from 'react';
+import {loginSlice} from './features/auth/loginSlice.ts';
+import Events from './features/booking/events/Events.tsx';
+import Seats from './features/booking/seats/Seats.tsx';
 
 function App() {
 

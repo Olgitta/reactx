@@ -1,4 +1,4 @@
-import {Seat} from "../features/booking/types";
+import {Seat} from '../features/booking/types';
 
 const LOCKED_SEATS_KEY = 'locked_seats';
 const GUEST_ID_KEY = 'guest_id';
@@ -94,7 +94,7 @@ class LocalStorageHelper {
             localStorage.clear();
             return true;
         } catch (error) {
-            console.error("[LocalStorageHelper] Error clearing all items from localStorage:", error);
+            console.error('[LocalStorageHelper] Error clearing all items from localStorage:', error);
             return false;
         }
     }
@@ -128,7 +128,7 @@ class LocalStorageHelper {
 
         const list = this.getItem<Seat[]>(LOCKED_SEATS_KEY);
         if (!list) {
-            console.warn("[LocalStorageHelper] Error deleting lockedSeats under key ", payload);
+            console.warn('[LocalStorageHelper] Error deleting lockedSeats under key ', payload);
             return;
         }
 

@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import {appConfig} from "../../../configuration/appConfig.ts";
-import {resolvePath} from "../../../shared/utils.ts";
-import {LockSeatRequest, SeatsResponse, UnLockSeatRequest} from "../types";
+import {appConfig} from '../../../configuration/appConfig.ts';
+import {resolvePath} from '../../../shared/utils.ts';
+import {LockSeatRequest, SeatsResponse, UnLockSeatRequest} from '../types';
 
 export const seatsApi = createApi({
     reducerPath: 'seatsApi',

@@ -1,8 +1,8 @@
 import React from 'react'
 import { useGetEventsQuery } from './eventsApi'
-import {useNavigate} from "react-router-dom";
-import EventCard from "./EventCard.tsx";
-import {Event} from "../types";
+import {useNavigate} from 'react-router-dom';
+import EventCard from './EventCard.tsx';
+import {Event} from '../types';
 
 const Events: React.FC = () => {
     const { data, error, isLoading } = useGetEventsQuery()

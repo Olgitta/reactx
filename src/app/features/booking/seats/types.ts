@@ -1,4 +1,4 @@
-import {SeatStatus} from "../types";
+import {SeatStatus} from '../types';
 
 export const seatStatusLabel = {
     [SeatStatus.AVAILABLE]: 'Available',

@@ -12,8 +12,8 @@ export function generateUuid(): string {
     }
 
     console.warn(
-        "crypto.randomUUID() is not available. Falling back to less robust UUID generation. " +
-        "Consider updating your browser or environment if this warning persists in modern setups."
+        'crypto.randomUUID() is not available. Falling back to less robust UUID generation. ' +
+        'Consider updating your browser or environment if this warning persists in modern setups.'
     );
 
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {

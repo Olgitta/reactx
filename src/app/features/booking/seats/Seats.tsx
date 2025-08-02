@@ -2,13 +2,13 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {generateUuid} from '../../../shared/utils.ts';
 import {useGetSeatsQuery, useLockSeatMutation, useUnlockSeatMutation} from './seatsApi';
-import {useWebSocket} from "../../../shared/hooks/useWebSocket.ts";
-import {appConfig} from "../../../configuration/appConfig.ts";
-import {wsMessageHandler} from "./wsMessageHandler.ts";
-import {RedisMessage} from "../../../shared/hooks/types.ts";
-import {LockSeatRequest, Seat, SeatStatus, UnLockSeatRequest} from "../types";
-import {getSeatClassName, isSeatDisabled} from "./helpers.ts";
-import EventCard from "../events/EventCard.tsx";
+import {useWebSocket} from '../../../shared/hooks/useWebSocket.ts';
+import {appConfig} from '../../../configuration/appConfig.ts';
+import {wsMessageHandler} from './wsMessageHandler.ts';
+import {RedisMessage} from '../../../shared/hooks/types.ts';
+import {LockSeatRequest, Seat, SeatStatus, UnLockSeatRequest} from '../types';
+import {getSeatClassName, isSeatDisabled} from './helpers.ts';
+import EventCard from '../events/EventCard.tsx';
 
 const Seats: React.FC = () => {
     const {eventId, venueId} = useParams();
@@ -29,7 +29,7 @@ const Seats: React.FC = () => {
     useEffect(() => {
         if (!eventCard) {
             // Redirect if no state provided
-            navigate("/events", {replace: true});
+            navigate('/events', {replace: true});
         }
     }, [eventCard, navigate]);
 

@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import {loginSlice} from './features/auth/loginSlice.ts';
 import {registerSlice} from './features/register/registerSlice.ts';
 import {eventsApi} from './features/booking/events/eventsApi.ts';
-import {seatsApi} from "./features/booking/seats/seatsApi.ts";
+import {seatsApi} from './features/booking/seats/seatsApi.ts';
 
 export const store = configureStore({
     reducer: {

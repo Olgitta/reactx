@@ -1,5 +1,5 @@
-import {Seat, SeatStatus} from "../types";
-import {seatStatusClass} from "./types.ts";
+import {Seat, SeatStatus} from '../types';
+import {seatStatusClass} from './types.ts';
 
 export const isSeatDisabled = (seat:Seat, userId:string) : boolean => {
     if(seat.statusId === SeatStatus.LOCKED && userId !== seat.guestId) {

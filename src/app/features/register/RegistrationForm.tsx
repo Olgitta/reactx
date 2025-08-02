@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import {register, selectRegister} from "./registerSlice.ts";
-import {useAppDispatch, useAppSelector} from "../../appHooks.ts";
+import {register, selectRegister} from './registerSlice.ts';
+import {useAppDispatch, useAppSelector} from '../../appHooks.ts';
 
 export const RegistrationForm: React.FC = () => {
     const [email, setEmail] = useState('');

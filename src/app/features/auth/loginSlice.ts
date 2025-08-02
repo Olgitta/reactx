@@ -1,6 +1,6 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit'
 import type {RootState} from '../../store.ts'
-import {appConfig} from "../../configuration/appConfig.ts";
+import {appConfig} from '../../configuration/appConfig.ts';
 
 // Define a type for the slice state
 interface LoginState {

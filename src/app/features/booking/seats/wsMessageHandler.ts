@@ -1,6 +1,6 @@
-import {Seat, SeatStatus} from "../types";
-import {RedisMessage} from "../../../shared/hooks/types.ts";
-import {appConfig} from "../../../configuration/appConfig.ts";
+import {Seat, SeatStatus} from '../types';
+import {RedisMessage} from '../../../shared/hooks/types.ts';
+import {appConfig} from '../../../configuration/appConfig.ts';
 
 /**
  *
@@ -40,7 +40,7 @@ export const wsMessageHandler = (
                 guestId: messagePayload[3],
             };
 
-            console.log(`[wsMessageHandler] Parsed payload:`, seatUpdate);
+            console.log('[wsMessageHandler] Parsed payload:', seatUpdate);
             return seatUpdate;
         } else {
             console.log(`[wsMessageHandler] Ignoring message with pattern "${data.pattern}" or invalid channel format.`);
