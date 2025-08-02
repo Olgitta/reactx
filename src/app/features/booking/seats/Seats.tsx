@@ -2,7 +2,6 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {generateUuid} from '../../../shared/utils.ts';
 import {useGetSeatsQuery, useLockSeatMutation, useUnlockSeatMutation} from './seatsApi';
-import {seatStatusClass, seatStatusLabel} from './types';
 import {useWebSocket} from "../../../shared/hooks/useWebSocket.ts";
 import {appConfig} from "../../../configuration/appConfig.ts";
 import {wsMessageHandler} from "./wsMessageHandler.ts";
@@ -30,7 +29,7 @@ const Seats: React.FC = () => {
     useEffect(() => {
         if (!eventCard) {
             // Redirect if no state provided
-            navigate("/events", { replace: true });
+            navigate("/events", {replace: true});
         }
     }, [eventCard, navigate]);
 
@@ -47,13 +46,13 @@ const Seats: React.FC = () => {
 
     const handleOrderClick = () => {
         const seatsLockedByGuest = seats.map((seat: Seat) => {
-            if(seat.guestId === guestId) {
+            if (seat.guestId === guestId) {
                 return seat;
             }
         })
 
-        if(seatsLockedByGuest && seatsLockedByGuest.length > 0) {
-            navigate('/order/summary', { state: { event: eventCard, lockedSeats: seatsLockedByGuest } });
+        if (seatsLockedByGuest && seatsLockedByGuest.length > 0) {
+            navigate('/order/summary', {state: {event: eventCard, lockedSeats: seatsLockedByGuest}});
         }
 
         return
@@ -135,56 +134,58 @@ const Seats: React.FC = () => {
     }, {});
 
     return (
-        <div className="container mt-4">
+        <main>
+            {/* EventCard row */}
+            <section className="py-5 container">
+                {/*<div className="col-xs-12">*/}
+                <EventCard event={eventCard}/>
+                {/*</div>*/}
+            </section>
 
-            <div className="d-flex flex-column gap-3">
-                <EventCard event={eventCard} />
-            </div>
-            <div className="d-flex flex-column gap-3">
-                <h4>Seat Selection</h4>
-                {Object.entries(groupedByRow).map(([row, seats]) => (
-                    <div key={row}>
-                        <strong>Row {row}</strong>
-                        <div className="d-flex gap-2 flex-wrap mt-1">
-                            {seats.map((seat) => (
-                                <button
-                                    key={`${seat.rowNumber}-${seat.seatNumber}`}
-                                    className={`${getSeatClassName(seat, guestId)} px-3 py-2`}
-                                    disabled={isSeatDisabled(seat, guestId)}
-                                    onClick={() => handleSeatClick(seat)}
-                                >
-                                    {seat.seatNumber}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-                <div className="d-flex flex-column gap-3">
-                    <button
-                        className="btn btn-info  px-3 py-2"
-                        disabled={false}
-                        onClick={() => handleOrderClick()}
-                    >Order</button>
-                </div>
-
-            <div>
-                <h5>Legend:</h5>
-                <div className="d-flex gap-3">
-                    {Object.entries(seatStatusLabel).map(([status, label]) => (
-                        <div key={status} className="d-flex align-items-center gap-2">
-              <span
-                  className={`badge ${seatStatusClass[status as unknown as SeatStatus]}`}
-                  style={{width: 34, height: 24}}
-              >{status}</span>
-                            <span>{label}</span>
+            {/* Seats */}
+            <section className="py-5 container">
+                {/* Seat selection area */}
+                <div className="col-sm-6 col-md-4">
+                    <h4>Seat Selection</h4>
+                    {Object.entries(groupedByRow).map(([row, seats]) => (
+                        <div key={row} className="mb-3">
+                            <h5>Row {row}</h5>
+                            <div className="d-flex gap-2 flex-wrap mt-1">
+                                {seats.map((seat) => (
+                                    <button
+                                        key={`${seat.rowNumber}-${seat.seatNumber}`}
+                                        className={`${getSeatClassName(seat, guestId)} px-3 py-2`}
+                                        disabled={isSeatDisabled(seat, guestId)}
+                                        onClick={() => handleSeatClick(seat)}
+                                    >
+                                        {seat.seatNumber}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     ))}
                 </div>
-            </div>
-        </div>
+
+            </section>
+
+            {/* Order button */}
+            <section className="py-5 container">
+                <div className="col-sm-6 col-md-4">
+                        <p>
+                            <br/>
+                            <button
+                                className="btn btn-primary my-2"
+                                disabled={false}
+                                onClick={handleOrderClick}
+                            >
+                                Order
+                            </button>
+                        </p>
+                    </div>
+            </section>
+        </main>
     );
+
 };
 
 export default Seats;
