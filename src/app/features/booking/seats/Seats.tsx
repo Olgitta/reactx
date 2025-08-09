@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import clsx from 'clsx';
 import {generateUuid} from '../../../shared/utils.ts';
 import {useGetSeatsQuery, useLockSeatMutation, useUnlockSeatMutation} from './seatsApi';
 import {useWebSocket} from '../../../shared/hooks/useWebSocket.ts';
@@ -7,7 +8,7 @@ import {appConfig} from '../../../configuration/appConfig.ts';
 import {wsMessageHandler} from './wsMessageHandler.ts';
 import {RedisMessage} from '../../../shared/hooks/types.ts';
 import {LockSeatRequest, Seat, SeatStatus, UnLockSeatRequest} from '../types';
-import {getSeatClassName, isSeatDisabled} from './helpers.ts';
+import {isSeatAvailable, isSeatDisabled, isSeatLockedByMe} from './helpers.ts';
 import EventCard from '../events/EventCard.tsx';
 
 const Seats: React.FC = () => {
@@ -134,27 +135,36 @@ const Seats: React.FC = () => {
     }, {});
 
     return (
-        <main>
-            {/* EventCard row */}
-            <section className="py-5 container">
-                {/*<div className="col-xs-12">*/}
-                <EventCard event={eventCard}/>
-                {/*</div>*/}
-            </section>
+        <>
+            <div className="row">
+                <div className="col">
+                    <div className="page-header">
+                        <h2 className="page-title">Seats selection</h2>
+                    </div>
+                </div>
+            </div>
 
-            {/* Seats */}
-            <section className="py-5 container">
+            {/* EventCard row */}
+            <div className="row row-cols-1 row-cols-lg-3 g-2 g-lg-3">
+                <EventCard event={eventCard}/>
                 {/* Seat selection area */}
-                <div className="col-sm-6 col-md-4">
-                    <h4>Seat Selection</h4>
-                    {Object.entries(groupedByRow).map(([row, seats]) => (
-                        <div key={row} className="mb-3">
-                            <h5>Row {row}</h5>
-                            <div className="d-flex gap-2 flex-wrap mt-1">
+                <div className="col">
+                    <div className="p-1">
+
+                        {Object.entries(groupedByRow).map(([row, seats]) => (
+                            <div key={row}>
+                                <h6>Row {row}</h6>
                                 {seats.map((seat) => (
                                     <button
                                         key={`${seat.rowNumber}-${seat.seatNumber}`}
-                                        className={`${getSeatClassName(seat, guestId)} px-3 py-2`}
+                                        className={clsx(
+                                            'mb-1 me-1 btn',
+                                            isSeatLockedByMe(seat, guestId)
+                                                ? 'btn-info'
+                                                : isSeatAvailable(seat)
+                                                    ? 'btn-success'
+                                                    : 'btn-light'
+                                        )}
                                         disabled={isSeatDisabled(seat, guestId)}
                                         onClick={() => handleSeatClick(seat)}
                                     >
@@ -162,28 +172,26 @@ const Seats: React.FC = () => {
                                     </button>
                                 ))}
                             </div>
-                        </div>
-                    ))}
+                        ))}
+
+                    </div>
                 </div>
 
-            </section>
+            </div>
 
             {/* Order button */}
-            <section className="py-5 container">
-                <div className="col-sm-6 col-md-4">
-                        <p>
-                            <br/>
-                            <button
-                                className="btn btn-primary my-2"
-                                disabled={false}
-                                onClick={handleOrderClick}
-                            >
-                                Order
-                            </button>
-                        </p>
-                    </div>
-            </section>
-        </main>
+            <div className="row row-cols-1 row-cols-lg-3 g-2 g-lg-3">
+                <div className="col">
+                    <button
+                        className="btn btn-primary btn-lg w-100"
+                        disabled={false}
+                        onClick={handleOrderClick}
+                    >
+                        Order
+                    </button>
+                </div>
+            </div>
+        </>
     );
 
 };
