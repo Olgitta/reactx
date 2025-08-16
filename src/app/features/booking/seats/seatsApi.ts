@@ -13,6 +13,8 @@ export const seatsApi = createApi({
                 eventid: eventId,
                 venueid: venueId,
             }),
+            // Установка keepUnusedDataFor в 0 отключает кэширование
+            keepUnusedDataFor: 0,
             // transformResponse: (response: { data: Seat[] }) => response.data,
         }),
 

@@ -1,31 +1,41 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useLocation, useNavigate} from 'react-router-dom';
 import clsx from 'clsx';
-import {generateUuid} from '../../../shared/utils.ts';
+// import {generateUuid} from '../../../shared/utils.ts';
 import {useGetSeatsQuery, useLockSeatMutation, useUnlockSeatMutation} from './seatsApi';
 import {useWebSocket} from '../../../shared/hooks/useWebSocket.ts';
 import {appConfig} from '../../../configuration/appConfig.ts';
 import {wsMessageHandler} from './wsMessageHandler.ts';
 import {RedisMessage} from '../../../shared/hooks/types.ts';
-import {LockSeatRequest, Seat, SeatStatus, UnLockSeatRequest} from '../types';
+import {Event, LockSeatRequest, Seat, SeatStatus, UnLockSeatRequest} from '../types';
 import {isSeatAvailable, isSeatDisabled, isSeatLockedByMe} from './helpers.ts';
 import EventCard from '../events/EventCard.tsx';
+import {useUnload} from '../../../shared/hooks/useUnload.ts';
+import {useAppSelector} from '../../../appHooks.ts';
+import {RootState} from '../../../store.ts';
+import PageTitle from '../../../shared/components/PageTitle.tsx';
 
 const Seats: React.FC = () => {
-    const {eventId, venueId} = useParams();
+    const guestId = useAppSelector((state: RootState) => state.guest.guestId);
     const location = useLocation();
-    const eventCard = location.state?.eventCard;
+    const doUnlockRef = useRef<boolean>(false);
+    const eventCard: Event = location.state?.eventCard;
+
     const navigate = useNavigate()
+
     const {data, error, isLoading} = useGetSeatsQuery({
-        eventId: Number(eventId),
-        venueId: Number(venueId),
+        eventId: eventCard.id,
+        venueId: eventCard.venueId,
     });
 
     const [lockSeat] = useLockSeatMutation();
     const [unlockSeat] = useUnlockSeatMutation();
 
     const [seats, setSeats] = useState<Seat[]>([]);
-    const [guestId, setGuestId] = useState<string | ''>('');
+    const seatsRef = useRef<Seat[]>([]);
+
+    // const [guestId, setGuestId] = useState<string>('');
+    // const guestIdRef = useRef<string>('');
 
     useEffect(() => {
         if (!eventCard) {
@@ -34,10 +44,10 @@ const Seats: React.FC = () => {
         }
     }, [eventCard, navigate]);
 
-    useEffect(() => {
-        const uuid = generateUuid();
-        setGuestId(uuid);
-    }, []);
+    // useEffect(() => {
+    //     const uuid = generateUuid();
+    //     setGuestId(uuid);
+    // }, []);
 
     useEffect(() => {
         if (data?.data) {
@@ -45,15 +55,57 @@ const Seats: React.FC = () => {
         }
     }, [data]);
 
-    const handleOrderClick = () => {
-        const seatsLockedByGuest = seats.map((seat: Seat) => {
-            if (seat.guestId === guestId) {
-                return seat;
-            }
-        })
+    // useEffect(() => {
+    //     seatsRef.current = seats;
+    //     if (error || !data) {
+    //         return;
+    //     }
+    //
+    //     console.log(toLocalStorage);
+    //     LocalStorageHelper.saveItem('seatsLockedByMe', toLocalStorage);
+    // }, [seats]);
 
-        if (seatsLockedByGuest && seatsLockedByGuest.length > 0) {
-            navigate('/order/summary', {state: {event: eventCard, lockedSeats: seatsLockedByGuest}});
+    // useEffect(() => {
+    //     guestIdRef.current = guestId;
+    // }, [guestId]);
+
+    const getSeatsLockedByMe = () => {
+        return seatsRef.current.filter(s => s.guestId === guestId);
+    };
+
+    const unlockSeatsLockedByMe = useCallback(() => {
+        if (!doUnlockRef.current) {
+            doUnlockRef.current = true;
+            return;
+        }
+
+        const seatsLockedByMe = getSeatsLockedByMe();
+
+        seatsLockedByMe.forEach(seat => {
+            const payload: UnLockSeatRequest = {
+                eventId: eventCard.id,
+                venueId: eventCard.venueId,
+                rowNumber: seat.rowNumber,
+                seatNumber: seat.seatNumber
+            };
+            unlockSeat(payload).unwrap();
+            console.log('[Seats] unlock seat', payload);
+        });
+    }, [eventCard, unlockSeat]);
+
+    useUnload(unlockSeatsLockedByMe);
+
+    const handleOrderClick = () => {
+        const seatsLockedByMe = seats.filter(s => s.guestId === guestId);
+
+        if (seatsLockedByMe && seatsLockedByMe.length > 0) {
+            navigate('/order/summary', {
+                state: {
+                    event: eventCard,
+                    lockedSeats: seatsLockedByMe,
+                    guestId: guestId
+                }
+            });
         }
 
         return
@@ -66,8 +118,8 @@ const Seats: React.FC = () => {
             if (seat.statusId === SeatStatus.AVAILABLE) {
                 // lockSeat
                 const payload: LockSeatRequest = {
-                    eventId: Number(eventId),
-                    venueId: Number(venueId),
+                    eventId: eventCard.id,
+                    venueId: eventCard.venueId,
                     rowNumber: seat.rowNumber,
                     seatNumber: seat.seatNumber,
                     guestId: guestId
@@ -79,8 +131,8 @@ const Seats: React.FC = () => {
             if (seat.statusId === SeatStatus.LOCKED && seat.guestId === guestId) {
                 // unlockSeat
                 const payload: UnLockSeatRequest = {
-                    eventId: Number(eventId),
-                    venueId: Number(venueId),
+                    eventId: eventCard.id,
+                    venueId: eventCard.venueId,
                     rowNumber: seat.rowNumber,
                     seatNumber: seat.seatNumber
                 };
@@ -94,7 +146,7 @@ const Seats: React.FC = () => {
 
     const handleSocketMessage = useCallback((redisMessage: RedisMessage) => {
         console.log('[Seats] ws message:', redisMessage);
-        const updatedSeat = wsMessageHandler(redisMessage, Number(eventId), Number(venueId));
+        const updatedSeat = wsMessageHandler(redisMessage, eventCard.id, eventCard.venueId);
         if (updatedSeat) {
             console.log('[Seats] Updated seat:', updatedSeat);
             setSeats(prevSeats => {
@@ -106,7 +158,7 @@ const Seats: React.FC = () => {
                 );
             });
         }
-    }, [eventId, venueId]);
+    }, [eventCard.id, eventCard.venueId]);
 
     const {isConnected: isWsConnected} = useWebSocket(
         appConfig.ws.url,
@@ -114,19 +166,27 @@ const Seats: React.FC = () => {
         handleSocketMessage);
 
     if (!isWsConnected) return (
-        <div className="container">
-            <p>Connecting to ws...</p>
-        </div>);
+        <div className="alert alert-dismissible alert-secondary">
+            Connecting Loading ...
+        </div>
+    );
 
-    if (isLoading) return (
-        <div className="container">
-            <p>Loading seats...</p>
-        </div>);
+    if (isLoading) {
+        return (
+            <div className="alert alert-dismissible alert-secondary">
+                <button type="button" className="btn-close" data-bs-dismiss="alert"></button>
+                <strong>Well done!</strong> You successfully read <a href="#" className="alert-link">this important
+                alert message</a>.
+            </div>
+        )
+    }
 
     if (error || !data) return (
-        <div className="container">
-            <p>Error loading seats.</p>
-        </div>);
+        <div className="alert alert-dismissible alert-danger">
+            <button type="button" className="btn-close" data-bs-dismiss="alert"></button>
+            <strong>Oh snap!</strong> Something went wrong.
+        </div>
+    );
 
     const groupedByRow = seats.reduce((acc: Record<string, Seat[]>, seat) => {
         acc[seat.rowNumber] = acc[seat.rowNumber] || [];
@@ -136,18 +196,13 @@ const Seats: React.FC = () => {
 
     return (
         <>
-            <div className="row">
-                <div className="col">
-                    <div className="page-header">
-                        <h2 className="page-title">Seats selection</h2>
-                    </div>
-                </div>
-            </div>
 
-            {/* EventCard row */}
+        <PageTitle title={'Seats selection'} />
+
             <div className="row row-cols-1 row-cols-lg-3 g-2 g-lg-3">
+
                 <EventCard event={eventCard}/>
-                {/* Seat selection area */}
+
                 <div className="col">
                     <div className="p-1">
 
@@ -179,7 +234,6 @@ const Seats: React.FC = () => {
 
             </div>
 
-            {/* Order button */}
             <div className="row row-cols-1 row-cols-lg-3 g-2 g-lg-3">
                 <div className="col">
                     <button

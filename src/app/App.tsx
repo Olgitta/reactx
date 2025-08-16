@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import Navigation from './shared/components/Navigation.tsx';
 import {RegistrationForm} from './features/register/RegistrationForm.tsx';
 import {LoginForm} from './features/auth/LoginForm.tsx';
@@ -7,6 +7,7 @@ import {useEffect} from 'react';
 import {loginSlice} from './features/auth/loginSlice.ts';
 import Events from './features/booking/events/Events.tsx';
 import Seats from './features/booking/seats/Seats.tsx';
+import OrderSummary from './features/booking/orders/OrderSummary.tsx';
 
 function App() {
 
@@ -16,20 +17,20 @@ function App() {
         const refreshToken = localStorage.getItem('refreshToken');
 
         if (accessToken && refreshToken) {
-            dispatch(loginSlice.actions.setTokens({ accessToken, refreshToken }));
+            dispatch(loginSlice.actions.setTokens({accessToken, refreshToken}));
         }
     }, []);
 
     return (
         <Router>
-            <div className="container" style={{ marginTop: '30px' }}>
-                <Navigation />
+            <Navigation/>
+            <div className="container">
                 <Routes>
-                    <Route path="/" element={<RegistrationForm />} />
-                    <Route path="/login" element={<LoginForm />} />
-                    <Route path="/events" element={<Events />} />
-                    <Route path="/seats/:eventId/:venueId" element={<Seats />} />
-                    <Route path="/order/summary" element={<Seats />} />
+                    <Route path="/registration" element={<RegistrationForm/>}/>
+                    <Route path="/login" element={<LoginForm/>}/>
+                    <Route path="/events" element={<Events/>}/>
+                    <Route path="/seats" element={<Seats/>}/>
+                    <Route path="/order/summary" element={<OrderSummary/>}/>
                 </Routes>
             </div>
         </Router>

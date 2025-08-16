@@ -9,31 +9,25 @@ interface EventCardProps {
         venueId: number
     }
     onClick?: () => void
+    fromEvents?: boolean
 }
 
-const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
+const EventCard: React.FC<EventCardProps> = ({ event, onClick, fromEvents }) => {
     return (
-        <div
-            className="col-sm-6 col-md-4"
-            style={{ cursor: onClick ? 'pointer' : 'default' }}
-            onClick={onClick}
-        >
-            <div className="panel panel-primary">
-                <div className="panel-heading">
-                    <h4 className="panel-title">{event.name}</h4>
-                </div>
-                <div className="panel-body">
-                    <p>
-                        <strong>Datetime:</strong>
-                        <br /> {new Date(event.dateTime).toLocaleString()}
-                    </p>
-                    <p>
-                        <strong>Type:</strong> {event.type === 1 ? 'Concert' : 'Movie'}
-                    </p>
+        <div className="col">
+            <div className={`p-1 ${fromEvents ? 'h-100' : ''}`}>
+                <div className={`card border-primary mb-3 ${fromEvents ? 'h-100' : ''}`}
+                     style={{cursor: onClick ? 'pointer' : 'default'}}
+                     onClick={onClick}>
+                    <div className="card-header">{event.name}</div>
+                    <div className="card-body">
+                        <h4 className="card-title">{new Date(event.dateTime).toLocaleString()}</h4>
+                        <p className="card-text">{event.type === 1 ? 'Concert' : 'Movie'}</p>
+                    </div>
                 </div>
             </div>
         </div>
-    )
+)
 }
 
 export default EventCard

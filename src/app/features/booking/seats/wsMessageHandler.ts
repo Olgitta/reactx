@@ -1,4 +1,4 @@
-import {Seat, SeatStatus} from '../types';
+import {SeatStatus, SeatWs} from '../types';
 import {RedisMessage} from '../../../shared/hooks/types.ts';
 import {appConfig} from '../../../configuration/appConfig.ts';
 
@@ -18,7 +18,7 @@ import {appConfig} from '../../../configuration/appConfig.ts';
 export const wsMessageHandler = (
     data: RedisMessage,
     eventId: number,
-    venueId: number) : Seat | null => {
+    venueId: number) : SeatWs | null => {
 
     console.log(`[wsMessageHandler] Received message from channel "${data.channel}" with pattern "${data.pattern}":`, data);
 
@@ -33,7 +33,7 @@ export const wsMessageHandler = (
             }
 
             const messagePayload: [SeatStatus, string, string, string] = JSON.parse(data.message);
-            const seatUpdate: Seat = {
+            const seatUpdate: SeatWs = {
                 statusId: messagePayload[0],
                 rowNumber: messagePayload[1],
                 seatNumber: messagePayload[2],

@@ -22,13 +22,19 @@ export enum SeatStatus {
     BOOKED = 3
 }
 
-export interface Seat {
-    id?: number;
+export interface SeatDetails {
     rowNumber: string;
     seatNumber: string;
     statusId: SeatStatus;
     guestId: string;
 }
+
+export interface Seat extends SeatDetails {
+    id: number;
+}
+
+// WebSocket seat update (no ID)
+export type SeatWs = SeatDetails;
 
 export interface SeatsResponse extends ResponseMetadata{
     data: Seat[];

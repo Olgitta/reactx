@@ -1,12 +1,4 @@
-import {Seat} from '../features/booking/types';
 
-const LOCKED_SEATS_KEY = 'locked_seats';
-const GUEST_ID_KEY = 'guest_id';
-
-/**
- * A utility class for safely interacting with localStorage to store and retrieve JSON objects.
- * It handles serialization/deserialization and provides basic error handling.
- */
 class LocalStorageHelper {
     /**
      * Saves a JSON object to localStorage under a specified key.
@@ -49,22 +41,79 @@ class LocalStorageHelper {
         }
     }
 
+    // /**
+    //  * Updates an existing JSON object in localStorage by merging new properties.
+    //  * If the item does not exist, it will be created with the provided updates.
+    //  *
+    //  * @param key The key of the item to update.
+    //  * @param updates An object containing the properties to update.
+    //  * @returns {boolean} True if the item was successfully updated/created, false otherwise.
+    //  */
+    // static updateItem<T>(key: string, updates: Partial<T>): boolean {
+    //     try {
+    //         console.log('updates', updates);
+    //         const existingItem = LocalStorageHelper.getItem<T>(key);
+    //         console.log('existingItem', existingItem);
+    //         const newItem = {...(existingItem || {}), ...updates} as T;
+    //         console.log('newItem', newItem);
+    //         return LocalStorageHelper.saveItem(key, newItem);
+    //     } catch (error) {
+    //         console.error(`[LocalStorageHelper] Error updating item in localStorage under key "${key}":`, error);
+    //         return false;
+    //     }
+    // }
+
+    static updateSetOfT<T>(key: string, updates: T[]): T[] | null {
+        try {
+            // Получаем существующий массив. Если его нет, начинаем с пустого массива.
+            const existingItems = LocalStorageHelper.getItem<T[]>(key) || [];
+
+            // Конкатенируем новый массив, чтобы добавить элементы.
+            // Заметь: это полностью перезаписывает старый массив, если ты хотел слить их
+            // с уникальными ID, понадобится другая логика.
+            const newItem = [...existingItems, ...updates];
+
+            // Сохраняем обновлённый массив.
+            if (LocalStorageHelper.saveItem(key, newItem)) {
+                return newItem;
+            }
+            return null;
+        } catch (error) {
+            console.error(`[LocalStorageHelper] Error updating array in localStorage under key "${key}":`, error);
+            return null;
+        }
+    }
+
     /**
-     * Updates an existing JSON object in localStorage by merging new properties.
-     * If the item does not exist, it will be created with the provided updates.
+     * Updates a Set of numbers stored in localStorage.
+     * If the item does not exist, it will be created.
      *
      * @param key The key of the item to update.
-     * @param updates An object containing the properties to update.
-     * @returns {boolean} True if the item was successfully updated/created, false otherwise.
+     * @param newNumbers A Set or array of numbers to add to the existing set.
+     * @returns {Set<number> | null} The updated Set, or null if an error occurred.
      */
-    static updateItem<T>(key: string, updates: Partial<T>): boolean {
+    static updateSet(key: string, newNumbers: Set<number> | number[]): Set<number> | null {
         try {
-            const existingItem = LocalStorageHelper.getItem<T>(key);
-            const newItem = {...(existingItem || {}), ...updates} as T;
-            return LocalStorageHelper.saveItem(key, newItem);
+            // Получаем существующий Set. Если его нет, создаём новый.
+            // getItem возвращает null, если элемента нет.
+            const existingSet = LocalStorageHelper.getItem<number[]>(key);
+            const numbersSet = new Set<number>(existingSet || []);
+
+            // Проходим по новым числам и добавляем их в Set.
+            // Set автоматически обрабатывает уникальность.
+            newNumbers.forEach(number => numbersSet.add(number));
+
+            // Преобразуем Set обратно в массив для сохранения в localStorage.
+            const numbersArray = Array.from(numbersSet);
+
+            // Сохраняем обновлённый массив.
+            if (LocalStorageHelper.saveItem(key, numbersArray)) {
+                return numbersSet; // Возвращаем обновлённый Set.
+            }
+            return null;
         } catch (error) {
-            console.error(`[LocalStorageHelper] Error updating item in localStorage under key "${key}":`, error);
-            return false;
+            console.error(`[LocalStorageHelper] Error updating Set in localStorage under key "${key}":`, error);
+            return null;
         }
     }
 
@@ -99,56 +148,6 @@ class LocalStorageHelper {
         }
     }
 
-    static isGuest(id:string): boolean {
-        return localStorage.getItem(GUEST_ID_KEY) === id;
-    }
-
-    static saveLockedSeat(id: string, payload: Seat) {
-
-        if(!this.isGuest(id)) {
-            console.error('[LocalStorageHelper] Error saving lockedSeat: Guest is not Guest');
-            return;
-        }
-
-        let list = this.getItem<Seat[]>(LOCKED_SEATS_KEY);
-        if (!list) {
-            list = [];
-        }
-
-        list.push(payload);
-        this.saveItem(LOCKED_SEATS_KEY, list);
-    }
-
-    static removeLockedSeat(id: string, payload: Seat) {
-
-        if(!this.isGuest(id)) {
-            console.error('[LocalStorageHelper] Error removing lockedSeat: Guest is not Guest');
-            return;
-        }
-
-        const list = this.getItem<Seat[]>(LOCKED_SEATS_KEY);
-        if (!list) {
-            console.warn('[LocalStorageHelper] Error deleting lockedSeats under key ', payload);
-            return;
-        }
-
-        const updatedList = list.filter(
-            (seat) => !(seat.rowNumber === payload.rowNumber && seat.seatNumber === payload.seatNumber)
-        );
-
-        this.saveItem(LOCKED_SEATS_KEY, updatedList);
-    }
-
-    static removeLockedSeats(): Seat[] | null {
-        const list = this.getItem<Seat[]>(LOCKED_SEATS_KEY);
-        this.deleteItem(LOCKED_SEATS_KEY);
-
-        return list;
-    }
-
-    static saveGuestId(id: string) {
-        localStorage.setItem(GUEST_ID_KEY, id);
-    }
 }
 
 export default LocalStorageHelper;
