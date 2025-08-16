@@ -5,7 +5,7 @@ const Navigation: React.FC = () => {
     return (
         <nav className="navbar navbar-expand-lg bg-body-tertiary">
             <div className="container-fluid">
-                <a className="navbar-brand" href="#">ReactXDemo</a>
+                <a className="navbar-brand" href="/home">ReactXDemo</a>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarColor04" aria-controls="navbarColor04" aria-expanded="false"
                         aria-label="Toggle navigation">
