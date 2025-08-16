@@ -16,7 +16,7 @@ const Navigation: React.FC = () => {
                     <ul className="navbar-nav me-auto">
                         <li className="nav-item" role="presentation">
                             <NavLink
-                                to="/events"
+                                to="/home"
                                 className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}
                             >
                                 HOME
