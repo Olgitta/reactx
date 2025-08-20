@@ -3,7 +3,8 @@ import {useLocation} from 'react-router-dom';
 import {Seat, Event, UnLockSeatRequest} from '../types';
 import {useUnlockSeatMutation} from '../seats/seatsApi.ts';
 import {useUnload} from '../../../shared/hooks/useUnload.ts';
-import PageTitle from "../../../shared/components/PageTitle.tsx";
+import PageTitle from '../../../shared/components/PageTitle.tsx';
+import QrCodeGenerator from '../../../shared/components/QrCodeGenerator.tsx';
 
 const OrderSummary: React.FC = () => {
     const location = useLocation();
@@ -56,24 +57,28 @@ const OrderSummary: React.FC = () => {
 
     return (
         <>
-            <PageTitle title={'Order Summary'} />
+            <PageTitle title={eventCard.name} text={new Date(eventCard.dateTime).toLocaleString()}/>
 
-            <div className="row">
-                <div className="col">
-                    <div className="page-header">
-                        <h3 className="page-title">{eventCard.name}</h3>
-                        <p>guestId: {guestId}</p>
-                        {
-                            lockedSeats?.map((seat:Seat) => (
-                                <p
-                                    key={`${seat.rowNumber}-${seat.seatNumber}`}>
-                                    {seat.statusId} - {seat.rowNumber} - {seat.seatNumber} - {seat.guestId}
-                                </p>
-                            ))
-                        }
+            {
+                lockedSeats?.map((seat: Seat) => (
+                    <div className={'d-flex flex-row mb-2 ' +
+                        'border border-dark rounded ' +
+                        'text-dark ' +
+                        'p-2 col-12 col-lg-3'} style={{height: '100px'}}
+                         key={`${seat.rowNumber}-${seat.seatNumber}`}>
+
+                        <div className={'w-75'}>
+                            <h5>{eventCard.name}</h5>
+                            <h6>{new Date(eventCard.dateTime).toLocaleString()}</h6>
+                            <h3>{seat.rowNumber}-{seat.seatNumber}</h3>
+                        </div>
+                        <div>
+                            <QrCodeGenerator val={`${seat.rowNumber}${seat.seatNumber}`}/>
+                        </div>
                     </div>
-                </div>
-            </div>
+                ))
+            }
+
         </>
     )
 }

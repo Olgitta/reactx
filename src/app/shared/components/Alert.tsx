@@ -18,9 +18,13 @@ const Alert: React.FC<AlertProps> = ({text, loading, error}) => {
 
     return (
 
-        <div className="d-flex align-items-center justify-content-center min-vh-100">
-            <div className={`alert ${alertType}`}>
-                {text}
+        <div className="row">
+            <div className="col">
+                <div className="p-3 mb-sm-4 p-lg-5">
+                    <div className={`alert ${alertType}`}>
+                        {text}
+                    </div>
+                </div>
             </div>
         </div>
 
