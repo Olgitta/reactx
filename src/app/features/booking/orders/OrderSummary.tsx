@@ -12,7 +12,7 @@ const OrderSummary: React.FC = () => {
     const eventCard:Event = location.state?.event;
     const lockedSeats:Seat[] = location.state?.lockedSeats;
     const lockedSeatsRef = useRef<Seat[]>(lockedSeats);
-    const guestId = location.state?.guestId;
+    // const guestId = location.state?.guestId;
     const [unlockSeat] = useUnlockSeatMutation();
 
     const unlockAllSeats = useCallback(()=> {
