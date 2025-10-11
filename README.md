@@ -3,6 +3,8 @@
 
 A modern web app for browsing and booking event seats **in real time**. Built with a **React + TypeScript** frontend, **NestJS WebSocket server** for live updates, **Java Spring Boot API** for business logic, and **PostgreSQL + Redis** for reliable storage and caching.
 
+https://reactxdemo.onrender.com
+
 **Features:**
 
 * Real-time seat availability

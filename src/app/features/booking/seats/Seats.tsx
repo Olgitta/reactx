@@ -14,6 +14,7 @@ import {useUnload} from '../../../shared/hooks/useUnload.ts';
 import {useAppSelector} from '../../../appHooks.ts';
 import {RootState} from '../../../store.ts';
 import PageTitle from '../../../shared/components/PageTitle.tsx';
+import Alert from '../../../shared/components/Alert.tsx';
 
 const Seats: React.FC = () => {
     const guestId = useAppSelector((state: RootState) => state.guest.guestId);
@@ -173,20 +174,15 @@ const Seats: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="alert alert-dismissible alert-secondary">
-                <button type="button" className="btn-close" data-bs-dismiss="alert"></button>
-                <strong>Well done!</strong> You successfully read <a href="#" className="alert-link">this important
-                alert message</a>.
-            </div>
+            <Alert loading={true} text={'Loading...'} />
         )
     }
 
-    if (error || !data) return (
-        <div className="alert alert-dismissible alert-danger">
-            <button type="button" className="btn-close" data-bs-dismiss="alert"></button>
-            <strong>Oh snap!</strong> Something went wrong.
-        </div>
-    );
+    if (error || !data) {
+        return (
+            <Alert error={true} text={'Something went wrong...'} />
+        )
+    }
 
     const groupedByRow = seats.reduce((acc: Record<string, Seat[]>, seat) => {
         acc[seat.rowNumber] = acc[seat.rowNumber] || [];
